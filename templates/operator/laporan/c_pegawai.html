@@ -29,7 +29,7 @@
 
 <body onload="window.print();setTimeout(window.close, 0);">
     <img class="" style="float: left; width: 100px; height: 100px; margin-right: -100px;" src="{% static 'login/assets/img/logo.png' %}">
-    <h3 style="text-align:center">LAPORAN DATA KARYAWAN<br>MADRASAH ALIYAH NEGERI 1<br>
+    <h3 style="text-align:center">LAPORAN DATA PEGAWAI<br>MADRASAH ALIYAH NEGERI 1<br>
         KOTA BENGKULU<br>
         <FONT SIZE="3"><I>Jl. Cimanuk, Padang Harapan, Kec. Gading Cemp.,<br> Kota Bengkulu, Bengkulu 38225 <br> Telp/Fax: (0736) 21854</FONT>
     </h3>
@@ -41,11 +41,9 @@
         <thead>
             <tr>
                 <th>No.</th>
-                <th>Foto</th>
                 <th>Nama</th>
                 <th>NIP</th>
-                <th>Pangkat</th>
-                <th>Golongan</th>
+                <th>Pangkat/Golongan</th>
                 <th>Jabatan</th>
             </tr>
         </thead>
@@ -54,14 +52,10 @@
                 {% for karyawan in semua %}
                     <tr>
                         <td>{{forloop.counter}}</td>
-                        <td><img src="{{ karyawan.Foto.url }}" width="100px" height="100px"></td>
                                 <td>{{ karyawan.nama }}</td>
                                 <td>{{ karyawan.nip }}</td>
                                 <td>
-                                    {{karyawan.pangkat}}
-                                </td>
-                                <td>
-                                   {{karyawan.golongan}}
+                                    {{karyawan.pangkat_atau_golongan}}
                                 </td>
 
                                 <td>

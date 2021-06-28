@@ -45,7 +45,14 @@ urlpatterns = [
     path('coba', views.coba, name='coba'),
 
     path('hapus_keranjang/<int:id>', views.hapus_keranjang, name='hapus_keranjang'),
+    path('hapus_keranjang2/<int:id>',
+         views.hapus_keranjang2, name='hapus_keranjang2'),
     path('buat_pinjam', views.buat_pinjam, name='buat_pinjam'),
     path('pengembalian2/', views.pengembalian2, name='pengembalian2'),
+    path('kembalikan', views.kembalikan, name='kembalikan'),
+
+    path('simple_upload/', views.simple_upload, name='simple_upload'),
+    path('upload_barang/', views.upload_barang, name='upload_barang'),
+
 
 ]

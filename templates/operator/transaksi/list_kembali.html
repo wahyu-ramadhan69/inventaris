@@ -74,26 +74,22 @@
                                 <th>kode peminjaman</th>
                                 <th>Nama barang</th>
                                 <th>Status</th>
-                                <th>Keterangan</th>
-                                <th>Tanggal kembali</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for kembali in semua_kembali %}
                             <tr>
                                 <td>{{forloop.counter}}</td>
-                                <td>{{ kembali.nama_pengembali }}</td>
+                                <td>{{ kembali.pegawai.nama }}</td>
                                 <td>{{kembali.kode_pinjam}}</td>
-                                <td>{{ kembali.nama_barang }}</td>
+                                <td>{{ kembali.barang.nama }}</td>
                                 <td>
-                                    {% if kembali.status_pengembalian == "Dikembalikan" %}
+                                    {% if kembali.status_peminjaman == "Dikembalikan" %}
                                     <span class="badge badge-complete">Di kembalikan</span>
                                     {% else %}
                                     <span class="badge badge-dark">Tidak DI Ketahui</span>
                                     {% endif %}
                                 </td>
-                                <td>{{ kembali.keterangan }}</td>
-                                <td>{{ kembali.tanggal_kembali }}</td>
                             {% endfor %}
                         </tbody>
                     </table>

@@ -44,8 +44,9 @@
 
 {% block content %}
 <div class="card-body">
-<a class="btn btn-outline-secondary" href="{%url 'cetak_barang'%}" role="button"><i class="fa fa-print"> Cetak pdf</i></a>
-<a class="btn btn-outline-success" href="{%url 'cetak_barang_ex'%}" role="button"><i class="fa fa-print"> Cetak excel</i></a>
+    <form action="{%url 'cetak_barang'%}" method="GET" target='_blank' enctype="multipart/form-data">
+        <button type="submit" class="btn btn-outline-secondary"><i class="fa fa-print"></i> Cetak</button>
+    </form>
 </div>
 
 <div class="row">

@@ -42,8 +42,13 @@
 
 {% block content %}
 <div class="card-body">
-<a class="btn btn-outline-secondary" href="{%url 'c_pegawai'%}" role="button"><i class="fa fa-print"> Cetak Pdf</i></a>
-<a class="btn btn-outline-success" href="{%url 'cetak_pegawai_ex'%}" role="button"><i class="fa fa-print"> Cetak excel</i></a>
+    <form action="{%url 'c_pegawai'%}" method="GET" target='_blank' enctype="multipart/form-data">
+        <button type="submit" class="btn btn-outline-secondary"><i class="fa fa-print"></i> Cetak</button>
+    </form>
+
+    <!-- <form action="{%url 'cetak_pegawai_ex'%}" method="GET" target='_blank' enctype="multipart/form-data">
+        <button type="submit" class="btn btn-outline-secondary"><i class="fa fa-print"></i> Cetak ex</button>
+    </form> -->
 </div>
 
 <div class="row">

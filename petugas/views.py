@@ -4,6 +4,8 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.utils.html import format_html
 from .models import *
 from .forms import *
+from .resources import *
+from tablib import Dataset
 from django.http import JsonResponse
 import json
 from django.db.models import Max
@@ -18,22 +20,20 @@ IMAGE_FILE_TYPES = ['png', 'jpg', 'jpeg']
 
 @login_required
 def dashboard_op(request):
+    nomer = request.user.id
     if request.user.is_superuser == 0:
-        user = request.user.username
         sekarang = datetime.now().date()
         list_peminjaman = peminjaman_barang.objects.all().filter(
-            tanggal_pinjam=sekarang).filter(nama_op=user)
+            tanggal_pinjam=sekarang).filter(user=nomer)
         total_barang = barang.objects.count()
         total_pegawai = pegawai.objects.count()
-        total_peminjaman = peminjaman_barang.objects.all().filter(nama_op=user).count()
-        total_pengembalian = pengembalian_barang.objects.all().filter(nama_op=user).count()
+        total_peminjaman = peminjaman_barang.objects.all().filter(user=nomer).count()
 
         context = {
             'semua_pinjam': list_peminjaman,
             'total_barang': total_barang,
             'total_pegawai': total_pegawai,
-            'total_peminjaman': total_peminjaman,
-            'total_pengembalian': total_pengembalian
+            'total_peminjaman': total_peminjaman
         }
         return render(request, 'dashboard_operator.html', context)
     elif request.user.is_staff == 1:
@@ -45,6 +45,16 @@ def dashboard_op(request):
 @login_required
 def pegawai_op(request):
     list_pegawai = pegawai.objects.all()
+    form = PegawaiForm()
+    if request.method == 'POST':
+        form = PegawaiForm(request.POST or None, request.FILES or None)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Data pegawai berhasil di tambahkan")
+            return redirect('pegawai_op')
+        else:
+            messages.error(request, "Nip sudah pernah di daftarkan")
+            return redirect('pegawai_op')
     context = {
         'semua_pegawai': list_pegawai
     }
@@ -55,6 +65,63 @@ def pegawai_op(request):
 
 
 @login_required
+def simple_upload(request):
+    if request.method == 'POST':
+        kubsum = pegawaisumber()
+        dataset = Dataset()
+        data = request.FILES['myfile']
+
+        imported_data = dataset.load(data.read(), format='xlsx')
+        # print(imported_data)
+        for data in imported_data:
+            print(data[1])
+            value = pegawai(
+                data[0],
+                data[1],
+                data[2],
+                data[3],
+                data[4],
+            )
+            value.save()
+
+        # result = person_resource.import_data(dataset, dry_run=True)  # Test the data import
+
+        # if not result.has_errors():
+        #    person_resource.import_data(dataset, dry_run=False)  # Actually import now
+
+    return redirect('pegawai_op')
+
+
+@login_required
+def upload_barang(request):
+    if request.method == 'POST':
+        dataset = Dataset()
+        data = request.FILES['myfile']
+
+        imported_data = dataset.load(data.read(), format='xlsx')
+        # print(imported_data)
+        for data in imported_data:
+            print(data[1])
+            value = barang(
+                data[0],
+                data[1],
+                data[2],
+                data[3],
+                data[4],
+                data[5],
+                data[6],
+            )
+            value.save()
+
+        # result = person_resource.import_data(dataset, dry_run=True)  # Test the data import
+
+        # if not result.has_errors():
+        #    person_resource.import_data(dataset, dry_run=False)  # Actually import now
+
+    return redirect('barang_op')
+
+
+@login_required
 def tambahpegawai(request):
     form = PegawaiForm()
     if request.method == 'POST':
@@ -62,6 +129,9 @@ def tambahpegawai(request):
         if form.is_valid():
             form.save()
             messages.success(request, "Data pegawai berhasil di tambahkan")
+            return redirect('pegawai_op')
+        else:
+            messages.error(request, "Nip sudah pernah di daftarkan")
             return redirect('pegawai_op')
     return render(request, 'operator/pegawai/tambah_pegawai.html', {
         'form': form
@@ -74,8 +144,7 @@ def edit_pegawai(request, id):
     data = {
         'nama': Pegawai.nama,
         'nip': Pegawai.nip,
-        'pangkat': Pegawai.pangkat,
-        'golongan': Pegawai.golongan,
+        'pangkat_atau_golongan': Pegawai.pangkat_atau_golongan,
         'jabatan': Pegawai.jabatan,
         'Foto': Pegawai.Foto,
     }
@@ -127,11 +196,7 @@ def barang_op(request):
 @login_required
 def tambah_barang(request):
     if request.user.is_superuser == 0:
-        max = barang.objects.latest('id').id
-        maxi = max + 1
-        kode = 'BR00' + str(maxi)
-        print(kode)
-        Jenis = jenis.objects.all()
+        list = barang.objects.all()
         form = BarangForm()
         if request.method == 'POST':
             form = BarangForm(request.POST or None, request.FILES or None)
@@ -139,12 +204,6 @@ def tambah_barang(request):
                 form.save()
                 messages.success(request, "barang berhasil di tambahkan")
                 return redirect('barang_op')
-
-        return render(request, 'operator/barang/tambah_barang.html', {
-            'Jenis': Jenis,
-            'form': form,
-            'kode': kode
-        })
     else:
         return render(request, 'eror_404.html')
 
@@ -159,12 +218,12 @@ def hapus_barang(request, id):
 
 def edit_barang(request, id):
     Barang = barang.objects.get(id=id)
-    Jenis = jenis.objects.all()
     data = {
         'nama': Barang.nama,
         'merk': Barang.merk,
-        'jenis': Barang.jenis,
-        'satuan': Barang.satuan,
+        'kode': Barang.kode,
+        'tahun_perolehan': Barang.tahun_perolehan,
+        'penguasaan': Barang.penguasaan,
         'keterangan': Barang.keterangan,
         'Foto': Barang.Foto,
     }
@@ -178,8 +237,7 @@ def edit_barang(request, id):
 
     context = {
         'form': form,
-        'Barang': Barang,
-        'Jenis': Jenis
+        'Barang': Barang
     }
     print(Barang.Foto.url)
     return render(request, 'operator/barang/update_barang.html', context)
@@ -266,8 +324,8 @@ def hapus_jenis(request, id):
 
 @login_required
 def peminjaman(request):
-    User = request.user.username
-    Keranjang = keranjang.objects.all()
+    User = request.user.id
+    Keranjang = keranjang.objects.select_related('barang')
     if request.user.is_superuser == 0:
         if request.method == 'GET':
             keyword = request.GET.get('keyword', '')
@@ -280,13 +338,13 @@ def peminjaman(request):
             }
             return render(request, 'operator/transaksi/peminjaman.html', context)
         elif request.method == 'POST':
-            id = request.POST.get('id_barang')
+            id = request.POST.get('barang')
             form = keranjangbarang(request.POST or None)
-            Barang = barang.objects.get(kode=id)
+            Barang = barang.objects.get(id=id)
             data = {
                 'status': Barang.status
             }
-            update_barang = statusbarang(
+            update_barang = statusbarang2(
                 request.POST or None, initial=data, instance=Barang)
             if form.is_valid() and update_barang.is_valid():
                 simpan = form.save()
@@ -303,8 +361,8 @@ def peminjaman(request):
 @login_required
 def hapus_keranjang(request, id):
     Keranjang = keranjang.objects.get(id=id)
-    barang_id = request.POST.get("id_barang")
-    Barang = barang.objects.get(kode=barang_id)
+    barang_id = request.POST.get("id")
+    Barang = barang.objects.get(id=barang_id)
     data = {
         'status': Barang.status
     }
@@ -318,30 +376,72 @@ def hapus_keranjang(request, id):
 
 
 @login_required
-def buat_pinjam(request):
-    nama_op = request.user.username
-    nama = request.POST.get('nama_peminjam')
-    nip = request.POST.get('nip_peminjam')
-    pinjam = peminjaman_barang.objects.all()
-    max = peminjaman_barang.objects.latest('id').id
-    maxi = max + 1
-    kode = 'PJ00' + str(maxi)
-    print(kode)
-
-    Keranjang = keranjang.objects.all()
-    if request.method == 'POST':
-        for x in Keranjang:
-            simpan = peminjaman_barang(
-                nip_peminjam=nip, nama_peminjam=nama, nama_barang=x.nama_barang, id_barang=x.id_barang, nama_op=nama_op, kode_pinjam=kode)
-            simpan.save()
-        keranjang.objects.all().delete()
-        return redirect('list_peminjaman')
-
-    context = {
-        'Keranjang': Keranjang,
-        'kode': kode
+def hapus_keranjang2(request, id):
+    Keranjang = keranjang.objects.get(id=id)
+    barang_id = request.POST.get("id")
+    Barang = barang.objects.get(id=barang_id)
+    data = {
+        'status': Barang.status
     }
-    return render(request, 'operator/transaksi/buat_pinjam2.html', context)
+    update_barang = statusbarang(
+        request.POST or None, initial=data, instance=Barang)
+    if update_barang.is_valid():
+        update = update_barang.save(commit=False)
+        update.save()
+        keranjang.objects.filter(id=id).delete()
+        return redirect('buat_pinjam')
+
+
+@login_required
+def buat_pinjam(request):
+    data = keranjang.objects.all()
+    if not data:
+        return redirect('peminjaman')
+    else:
+        nama_op = request.user.id
+        nama = request.POST.get('nama_peminjam')
+        nip = request.POST.get('nip_peminjam')
+        no = request.POST.get('id_peminjam')
+        pinjam = peminjaman_barang.objects.all()
+        if not pinjam:
+            kode = 'PJ001'
+            Keranjang2 = keranjang.objects.select_related('barang')
+            Keranjang = keranjang.objects.all()
+            if request.method == 'POST':
+                for x in Keranjang:
+                    simpan = peminjaman_barang(
+                        kode_pinjam=kode, barang_id=x.barang.id, pegawai_id=no, user_id=nama_op)
+                    simpan.save()
+                keranjang.objects.all().delete()
+                return redirect('list_peminjaman')
+
+            context = {
+                'Keranjang': Keranjang,
+                'Keranjang2': Keranjang2,
+                'kode': kode
+            }
+            return render(request, 'operator/transaksi/buat_pinjam2.html', context)
+        else:
+            Keranjang2 = keranjang.objects.select_related('barang')
+            max = peminjaman_barang.objects.latest('id').id
+            maxi = max + 1
+            kode = 'PJ00' + str(maxi)
+            print(kode)
+
+            Keranjang = keranjang.objects.all()
+            if request.method == 'POST':
+                for x in Keranjang2:
+                    simpan = peminjaman_barang(
+                        kode_pinjam=kode, barang_id=x.barang.id, pegawai_id=no, user_id=nama_op)
+                    simpan.save()
+                keranjang.objects.all().delete()
+                return redirect('list_peminjaman')
+
+            context = {
+                'Keranjang': Keranjang,
+                'kode': kode
+            }
+            return render(request, 'operator/transaksi/buat_pinjam2.html', context)
 
 
 @login_required
@@ -392,7 +492,7 @@ def pinjam_barang(request, id):
 @login_required
 def hapus_pinjam(request, id):
     Pinjam = peminjaman_barang.objects.get(id=id)
-    Barang = barang.objects.get(kode=Pinjam.id_barang)
+    Barang = barang.objects.get(id=Pinjam.barang_id)
     data = {
         'status': Barang.status
     }
@@ -408,9 +508,9 @@ def hapus_pinjam(request, id):
 
 @login_required
 def list_peminjaman(request):
-    user = request.user.username
-    semua_pinjam = peminjaman_barang.objects.all().filter(nama_op=user).order_by('-id')
-    print(semua_pinjam)
+    nomer = request.user.id
+    semua_pinjam = peminjaman_barang.objects.all().select_related('barang').select_related(
+        'pegawai').select_related('user').filter(user=nomer).order_by('-id')
     context = {
         'semua_pinjam': semua_pinjam
     }
@@ -445,13 +545,12 @@ def pengembalian2(request):
     nip_peminjam = request.POST.get('nip_pengembali')
     User = request.user.username
     nomer = request.POST.get('id_transaksi')
-    kode = request.POST.get('id_barang')
     if request.method == 'GET':
         nama = request.GET.get('nama')
         nip = request.GET.get('nip')
         keyword = request.GET.get('keyword', '')
         hasil = peminjaman_barang.objects.filter(
-            nama_peminjam__icontains=keyword).distinct().filter(status_peminjaman='Dipinjam')
+            kode_pinjam__icontains=keyword).distinct().select_related('barang').filter(status_peminjaman='Dipinjam')
         context = {
             'User': User,
             'hasil': hasil,
@@ -481,7 +580,7 @@ def pengembalian2(request):
             kembali.save()
 
             hasil = peminjaman_barang.objects.filter(
-                nama_peminjam__icontains=peminjam).distinct().filter(status_peminjaman='Dipinjam')
+                kode_pinjam__icontains=peminjam).distinct().filter(status_peminjaman='Dipinjam')
             context = {
                 'User': User,
                 'hasil': hasil,
@@ -492,14 +591,47 @@ def pengembalian2(request):
 
 
 @login_required
+def kembali_barang(request, id):
+    Peminjaman = peminjaman_barang.objects.get(id=id)
+    Barang = barang.objects.get(id=Peminjaman.barang_id)
+    data = {
+        'status': Barang.status
+    }
+    update_barang = statusbarang(
+        request.POST or None, initial=data, instance=Barang)
+    update_pinjam = statuspinjam(request.POST or None, instance=Peminjaman)
+
+    kembali = KembaliBarang(request.POST or None)
+    if request.method == 'POST':
+        if update_barang.is_valid() and update_pinjam.is_valid() and kembali.is_valid():
+            update = update_barang.save(commit=False)
+            update2 = update_pinjam.save(commit=False)
+            update2.save()
+            update.save()
+            kembali.save()
+            return redirect('pengembalian')
+
+
+def kembalikan(request):
+    if request.method == 'GET':
+        keyword = request.GET.get('keyword', '')
+        hasil = peminjaman_barang.objects.all()
+        context = {
+            'hasil': hasil
+
+        }
+        return render(request, 'operator/transaksi/buat_kembali.html', context)
+
+
+@login_required
 def pengembalian(request):
     User = request.user.username
     if request.user.is_superuser == 0:
         if request.method == 'GET':
             keyword = request.GET.get('keyword', '')
-            hasil = peminjaman_barang.objects.filter(
-                nama_peminjam__icontains=keyword).distinct().filter(status_peminjaman='Dipinjam')
-            print(hasil)
+            hasil = peminjaman_barang.objects.all().select_related('barang').select_related(
+                'pegawai').select_related('user').filter(
+                kode_pinjam__icontains=keyword).distinct().filter(status_peminjaman='Dipinjam')
             context = {
                 'User': User,
                 'hasil': hasil
@@ -508,7 +640,7 @@ def pengembalian(request):
         elif request.method == 'POST':
             keyword = request.POST.get('keyword', '')
             hasil = peminjaman_barang.objects.filter(
-                nama_peminjam__icontains=keyword).distinct().filter(status_peminjaman='Dipinjam')
+                kode_pinjam__icontains=keyword).distinct().filter(status_peminjaman='Dipinjam')
             context = {
                 'User': User,
                 'hasil': hasil
@@ -519,52 +651,16 @@ def pengembalian(request):
 
 
 @login_required
-def kembali_barang(request, id):
-    User = request.user.username
-    nama = request.POST.get("nip_pengembali")
-    nip = request.POST.get("nama_pengembali")
-    hasil = peminjaman_barang.objects.filter(
-        nama_peminjam=nama).filter(status_peminjaman='Dipinjam')
-    Peminjaman = peminjaman_barang.objects.get(id=id)
-    Barang = barang.objects.get(kode=Peminjaman.id_barang)
-    if request.method == 'POST':
-        data = {
-            'status': Barang.status
-        }
-        update_barang = statusbarang(
-            request.POST or None, initial=data, instance=Barang)
-        update_pinjam = statuspinjam(
-            request.POST or None, instance=Peminjaman)
-        pengembalian = KembaliBarang(
-            request.POST or None, request.FILES or None)
-
-        if update_barang.is_valid() and update_pinjam.is_valid() and pengembalian.is_valid():
-            update1 = update_barang.save(commit=False)
-            update2 = update_pinjam.save(commit=False)
-            kembali = pengembalian.save()
-            update1.save()
-            update2.save()
-            kembali.save()
-
-            return redirect('pengembalian')
-
-    context = {
-        'User': User,
-        'hasil': hasil,
-        'nama': nama,
-        'nip': nip
-    }
-    return render(request, 'operator/transaksi/buat_kembali.html', context)
-
-
-@login_required
 def list_pengembalian(request):
     if request.user.is_superuser == 0:
         user = request.user.username
-        semua_kembali = pengembalian_barang.objects.all().filter(
-            nama_op=user).order_by('-id')
+        semua_kembali = peminjaman_barang.objects.all().filter(
+            status_peminjaman='Dikembalikan').order_by('-id')
+        semua = peminjaman_barang.objects.filter(
+            pengembalian_barang__isnull=True).values_list('kode_pinjam', flat=True)
         context = {
-            'semua_kembali': semua_kembali
+            'semua_kembali': semua_kembali,
+            'semua': semua
         }
         return render(request, 'operator/transaksi/list_kembali.html', context)
     else:

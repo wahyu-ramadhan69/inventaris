@@ -38,7 +38,6 @@
                                     <tr>
                                         <th class="serial">#</th>
                                         <th>Kode</th>
-                                        <th>Foto</th>
                                         <th>Nama</th>
                                         <th>Merk</th>
                                         <th>Keterangan</th>
@@ -50,17 +49,14 @@
                                     <tr>
                                         <td>{{forloop.counter}}</td>
                                         <td>{{barang.kode}}</td>
-                                        <td><img src="{{ barang.Foto.url }}" width="60px" height="60px"></td>
                                         <td>{{ barang.nama }}</td>
                                         <td>{{ barang.merk }}</td>
                                         <td>{{barang.keterangan}}</td>
                                         <td>
                                             <form action="" method="post" enctype="multipart/form-data">
                                                 {% csrf_token %}
-                                                <input type="text" name="nama_barang" value="{{ barang.nama }}" hidden>
-                                                <input type="text" name="merk_barang" value="{{ barang.merk }}" hidden>
-                                                <input type="text" name="jenis_barang" value="{{ barang.jenis }}" hidden>
-                                                <input type="text" name="id_barang" value="{{ barang.kode }}" hidden>
+                                                <input type="text" name="barang" value="{{ barang.id }}" hidden>
+                                                <input type="text" name="user" value="{{ User }}" hidden>
                                                 <input type="text" name="status" value="Dipinjam" hidden>
                                                 <button type="submit"  class="btn btn-primary btn-sm"><i class="fa fa-plus"></i> Pinjam barang</button> 
                                             </form>
@@ -90,13 +86,13 @@
                                 {% for keran in Keranjang %}
                                 <tr>
                                     <td>{{forloop.counter}}</td>
-                                    <td>{{keran.nama_barang}}</td>
-                                    <td>{{keran.merk_barang}}</td>
-                                    <td>{{keran.jenis_barang}}</td>
+                                    <td>{{keran.barang.nama}}</td>
+                                    <td>{{keran.barang.merk}}</td>
+                                    <td>{{keran.barang.kode}}</td>
                                     <td>
                                         <form action="{%url 'hapus_keranjang' keran.id%}" method="POST">
                                             {% csrf_token %}
-                                            <input type="text" name="id_barang" value="{{keran.id_barang}}" hidden>
+                                            <input type="text" name="id" value="{{keran.barang.id}}" hidden>
                                             <input type="text" name="status" value="Tersedia" hidden>
                                         <button type="submit" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></button>
                                         </form>

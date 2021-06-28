@@ -28,22 +28,35 @@
     </div>
 </div>
 {% if messages %}
-{%for message in messages%}
-<div class="breadcrumbs">
-    <div class="alert alert-success" role="alert">
-        {{message}}
+    {% for message in messages %}
+      {% if message.tags == "error"%}
+      <div class="breadcrumbs">
+        <div class="alert alert-danger" role="alert">
+            {{message}}
+        </div>
     </div>
-</div>
-{% endfor %}
-{% endif %}
+      {% else %}
+      <div class="breadcrumbs">
+        <div class="alert alert-success" role="alert">
+            {{message}}
+        </div>
+    </div>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
 {% endblock breadcrumbs %}
 
 
 
 {% block content %}
 <div class="card-body">
-<a class="btn btn-info" href="{%url 'tambahpegawai'%}" role="button">Tambah Data</a>
-<a class="btn btn-outline-secondary" href="{%url 'c_pegawai'%}" role="button"><i class="fa fa-print"> Cetak</i></a>
+<a class="btn btn-info" data-toggle="modal" data-target="#tambah" role="button" style="color: aliceblue;">Tambah</a>
+<!-- <a class="btn btn-info" href="{%url 'tambahpegawai'%}" role="button">Tambah Data</a> -->
+<a class="btn btn-outline-secondary" href="{%url 'c_pegawai'%}" target='_blank' role="button"><i class="fa fa-print"> Cetak</i></a>
+
+<a data-toggle="modal" data-target="#Modalexport"
+                        class="d-none d-sm-inline-block btn btn-sm btn-success shadow-sm"><i
+                            class="fas fa-print fa-sm text-white-50"></i> Import Data</a>
 </div>
 
 <div class="row">
@@ -60,8 +73,7 @@
                                 <th class="serial">#</th>
                                 <th>Nama</th>
                                 <th>NIP</th>
-                                <th>Pangkat</th>
-                                <th>Golongan</th>
+                                <th>Pangkat/Golongan</th>
                                 <th>Jabatan</th>
                                 <th class="serial">#</th>
                             </tr>
@@ -73,21 +85,18 @@
                                 <td>{{ karyawan.nama }}</td>
                                 <td>{{ karyawan.nip }}</td>
                                 <td>
-                                    {{karyawan.pangkat}}
-                                </td>
-                                <td>
-                                    {{karyawan.golongan}}
+                                    {{karyawan.pangkat_atau_golongan}}
                                 </td>
 
-                                <td>{% if karyawan.jabatan == 'Kepala sekolah' %}
+                                <td>{% if karyawan.jabatan == 'Kepala Sekolah' %}
                                     <span class="badge badge-secondary">Kepala Sekolah</span>
                                     {% elif karyawan.jabatan == 'Wakabid Kurikulum' %}
                                     <span class="badge badge-complete">Wakabid Kurikulum</span>
                                     {% elif karyawan.jabatan == 'Wakabid Sarana Prasarana' %}
                                     <span class="badge badge-complete">Wakabid Sarana Prasarana</span>
-                                    {% elif karyawan.jabatan == 'Wakabid kesiswaan' %}
+                                    {% elif karyawan.jabatan == 'Wakabid Kesiswaan' %}
                                     <span class="badge badge-complete">Wakabid kesiswaan</span>
-                                    {% elif karyawan.jabatan == 'Wakabid humas' %}
+                                    {% elif karyawan.jabatan == 'Wakabid Humas' %}
                                     <span class="badge badge-complete">Wakabid humas</span>
                                     {% elif karyawan.jabatan == 'Kepala Tata Usaha' %}
                                     <span class="badge badge-complete">Kepala Tata Usaha</span>
@@ -155,10 +164,7 @@
                                                                <p>Nip : {{karyawan.nip}}</p>
                                                             </li>
                                                             <li class="list-group-item">
-                                                                <p>Pangkat : {{karyawan.pangkat}} </p>
-                                                            </li>
-                                                            <li class="list-group-item">
-                                                                <p>Golongan : {{karyawan.golongan}} </p>
+                                                                <p>Pangkat Atau Golongan : {{karyawan.pangkat_atau_golongan}} </p>
                                                             </li>
                                                             <li class="list-group-item">
                                                                 <p>Jabatan : {{karyawan.jabatan}}<p>
@@ -172,7 +178,7 @@
                                                 </aside>
                                            </div>
                                            <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
                                         </div>
                                     </div>
                                 </div>
@@ -203,28 +209,8 @@
                                                                         <input type="text" class="form-control" name="nip" id="nip" value="{{karyawan.nip}}" autocomplete="off">
                                                                     </div>
                                                                     <div class="form-group">
-                                                                        <label for="jumlah" class="control-label mb-1">Pangkat</label>
-                                                                        <select name="pangkat" id="pangkat" class="form-control">
-                                                                            <option value="{{karyawan.pangkat}}">--Pilih Pangkat--</option>
-                                                                            <option value="Pembina">Pembina</option>
-                                                                            <option value="Pembina TK.I">Pembina TK.I</option>
-                                                                            <option value="Penata TK.I">Penata TK.I</option>
-                                                                            <option value="Penata">Penata </option>
-                                                                            <option value="Penata Muda TK.I">Penata Muda TK.I</option>
-                                                                            <option value="Penata Muda">Penata Muda</option>
-                                                                        </select>
-                                                                    </div>
-                                                                    <div class="form-group">
-                                                                        <label for="jumlah" class="control-label mb-1">Golongan</label>
-                                                                        <select name="golongan" id="golongan" class="form-control">
-                                                                            <option value="{{karyawan.golongan}}">--Pilih Golongan--</option>
-                                                                            <option value="IV/a">IV/a</option>
-                                                                            <option value="IV/b">IV/b</option>
-                                                                            <option value="III/a">III/a</option>
-                                                                            <option value="III/b">III/b</option>
-                                                                            <option value="III/c">III/c</option>
-                                                                            <option value="III/d">III/d</option>
-                                                                        </select>
+                                                                        <label for="jenis" class="control-label mb-1">Golonngan Atau Jabatan</label>
+                                                                        <input type="text" class="form-control" name="pangkat_atau_golongan" id="pangkat_atau_golongan" value="{{karyawan.pangkat_atau_golongan}}" autocomplete="off">
                                                                     </div>
                                                                     <div class="form-group">
                                                                         <label for="jumlah" class="control-label mb-1">Jabatan</label>
@@ -267,7 +253,90 @@
             </div>
         </div> <!-- /.card -->
     </div>  <!-- /.col-lg-8 -->
-
-    
 </div>
+
+<div class="modal fade" id="Modalexport" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true"></button>
+                <h4 class="modal-title" id="myModalLabel">Import data</h4>
+            </div>
+            <form class="form-horizontal" action="{% url 'simple_upload' %}" method="post"
+                enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="inputEmail3" class="col-sm-4 control-label">Pilih file</label>
+                        <div class="col-sm-7">
+                            <input type="file" name="myfile" class="form-control" id="inputEmail3" required>
+                        </div>
+                    </div>
+                </div>
+                <div class=" modal-footer">
+                    <button type="button" class="btn btn-default btn-flat" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary btn-flat" id="simpan">Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="tambah" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Tambah Pegawai</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="nama" class="control-label mb-1">Nama Pegawai</label>
+                    <input type="text" class="form-control" name="nama" id="nama" autocomplete="off" required>
+                    {% for err in form.nama.errors %}
+                        <small class="text-danger">{{err}}</small>
+                    {% endfor %}
+                </div>
+                <div class="form-group">
+                    <label for="jenis" class="control-label mb-1">NIP</label>
+                    <input type="number" class="form-control" name="nip" id="nip" autocomplete="off" min="0" maxlength="18" required>
+                    {% for err in form.nip.errors %}
+                        <small class="text-danger">{{err}}</small>
+                    {% endfor %}
+                </div>
+                <div class="form-group">
+                    <label for="jenis" class="control-label mb-1">Golonngan Atau Jabatan</label>
+                    <input type="text" class="form-control" name="pangkat_atau_golongan" id="pangkat_atau_golongan" autocomplete="off" required>
+                </div>
+                <div class="form-group">
+                    <label for="jumlah" class="control-label mb-1">Jabatan</label>
+                    <select name="jabatan" id="jabatan" class="form-control" required>
+                        <option value="">--Pilih Jabatan--</option>
+                        <option value="Fungsional Guru">Fungsional Guru</option>
+                        <option value="Fungsional Umum">Fungsional Umum</option>
+                        <option value="Kepala sekolah">Kepala sekolah</option>
+                        <option value="Wakabid Kurikulum">Wakabid Kurikulum</option>
+                        <option value="Wakabid humas">Wakabid humas</option>
+                        <option value="Wakabid Sarana Prasarana">Wakabid Sarana Prasarana</option>
+                        <option value="Wakabid kesiswaan">Wakabid kesiswaan</option>
+                        <option value="Kepala Tata Usaha">Kepala Tata Usaha</option>
+                    </select>
+                </div>
+                <div class class="form-group">
+                    <label for="Foto" class="control-label mb-1">Upload Foto</label></div>
+                    <input type="file" id="Foto" name="Foto" class="form-control-file">
+                </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Simpan</button>
+        </form>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock content %}

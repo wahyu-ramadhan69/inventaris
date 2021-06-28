@@ -31,6 +31,9 @@
                                             <label for="jumlah" class="control-label mb-1">Nama Peminjam</label>
                                             <input type="text" name="nama_peminjam" id="nama" placeholder="nama peminjam"  class="form-control" required>
                                         </div>
+                                        <div class="form-group">
+                                            <input type="text" name="id_peminjam" id="id_peminjam" placeholder="id"  class="form-control" required hidden>
+                                        </div>
                                         <input type="text" name="nama_barang" value="0" hidden>
                                         <input type="text" name="status_peminjaman" value="0" hidden>
                                         <input type="text" name="id_barang" value="0" hidden>
@@ -65,13 +68,13 @@
                                 {% for keran in Keranjang %}
                                 <tr>
                                     <td>{{forloop.counter}}</td>
-                                    <td>{{keran.nama_barang}}</td>
-                                    <td>{{keran.merk_barang}}</td>
-                                    <td>{{keran.jenis_barang}}</td>
+                                    <td>{{keran.barang.nama}}</td>
+                                    <td>{{keran.barang.merk}}</td>
+                                    <td>{{keran.barang.kode}}</td>
                                     <td>
-                                        <form action="{%url 'hapus_keranjang' keran.id%}" method="POST">
+                                        <form action="{%url 'hapus_keranjang2' keran.id%}" method="POST">
                                             {% csrf_token %}
-                                            <input type="text" name="id_barang" value="{{keran.id_barang}}" hidden>
+                                            <input type="text" name="id" value="{{keran.barang.id}}" hidden>
                                             <input type="text" name="status" value="Tersedia" hidden>
                                         <button type="submit" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></button>
                                         </form>

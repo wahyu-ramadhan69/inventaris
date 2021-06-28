@@ -18,7 +18,7 @@
                     <div class="page-title">
                         <ol class="breadcrumb text-right">
                             <li><a href="#">Dashboard</a></li>
-                            <li><a href="#">Barang</a></li>
+                            <li><a href="#">User</a></li>
                             <li class="active">List</li>
                         </ol>
                     </div>
@@ -44,14 +44,15 @@
 
 {% block content %}
 <div class="card-body">
-<a class="btn btn-info" href="{%url "tambah_petugas"%}" role="button">Tambah Petugas</a>
+<a class="btn btn-info" data-toggle="modal" data-target="#tambah" role="button" style="color: aliceblue;">Tambah</a>
+
 </div>
 
 <div class="row">
     <div class="col-xl-12">
         <div class="card">
             <div class="card-body">
-                <h4 class="box-title">List petugas</h4>
+                <h4 class="box-title">List User</h4>
             </div>
             <div class="card-body--">
                 <div class="table-stats order-table ov-h">
@@ -85,10 +86,10 @@
                                 <td>{{ user.date_joined }}</td>
                                 <td>
                                     {% if user.is_superuser == 1 %}
-                                    <a href="{% url 'ubahpass' user.id %}" button type="button" class="btn btn-primary btn-sm"><i class="fa fa-edit"></i></button></a>
+                                    <a button type="button" style="color: aliceblue;" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#ubah{{user.id}}"><i class="fa fa-edit"> Ganti password</i></button></a>
                                     {% else %}
-                                    <a href="{% url 'ubahpass' user.id %}" button type="button" class="btn btn-primary btn-sm"><i class="fa fa-edit"></i></button></a>
                                     <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#cobaModal{{user.id}}"><i class="fa fa-trash"></i></button>
+                                    <a button type="button" style="color: aliceblue;" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#ubah{{user.id}}"><i class="fa fa-edit"> Ganti password</i></button></a>
 
                                     <div class="modal fade" id="cobaModal{{user.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                                         <div class="modal-dialog" role="document">
@@ -111,8 +112,34 @@
                                         </div>
                                       </div>
                                     {% endif %}
-                                    
                                 </td>
+                                <div class="modal fade" id="ubah{{user.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                      <div class="modal-content">
+                                        <div class="modal-header">
+                                          <h5 class="modal-title" id="exampleModalLabel">Ganti password</h5>
+                                          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                          </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form method="POST" enctype="multipart/form-data" action="{%url 'ubahpass' user.id %}">
+                                                {% csrf_token %}
+                                                <div class="form-group col-8">
+                                                    <label for="nama" class="control-label mb-1">Password</label>
+                                                    <input type="password" class="form-control" name="password" id="username" autocomplete="off" value="">
+                                                    {% for err in form.username.errors %}
+                                                        <small class="text-danger">{{err}}</small>
+                                                    {% endfor %}
+                                                </div>
+                                        <div class="modal-footer">
+                                          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                          <button type="submit" class="btn btn-primary">Simpan</button>
+                                        </form>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -120,8 +147,58 @@
                 </div> <!-- /.table-stats -->
             </div>
         </div> <!-- /.card -->
-    </div>  <!-- /.col-lg-8 -->
-
-    
+    </div>  <!-- /.col-lg-8 -->    
 </div>
+
+<div class="modal fade" id="tambah" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Tambah Operator</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+            <form method="POST" enctype="multipart/form-data" action="{% url 'tambah_petugas' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="nama" class="control-label mb-1">Username</label>
+                    <input type="text" class="form-control" name="username" id="username" autocomplete="off" value="">
+                    {% for err in form.username.errors %}
+                        <small class="text-danger">{{err}}</small>
+                    {% endfor %}
+                </div>
+                <div class="form-group">
+                    <label for="jumlah" class="control-label mb-1">Password</label>
+                    <input type="password" class="form-control" name="password" id="password" min="0"  autocomplete="off">
+                    {% for err in form.password.errors %}
+                        <small class="text-danger">{{err}}</small>
+                    {% endfor %}
+                </div>
+                <div class="form-group">
+                    <label for="jenis" class="control-label mb-1">Email</label>
+                    <input type="email" class="form-control" name="email" id="email" autocomplete="off">
+                    {% for err in form.email.errors %}
+                        <small class="text-danger">{{err}}</small>
+                    {% endfor %}
+                </div>
+                <div class="form-group">
+                    <label for="is_superuser" class="control-label mb-1">Role</label>
+                    <select name="is_superuser" id="pangkat" class="form-control">
+                        <option value="-">--Pilih Role--</option>
+                        <option value="1">Admin</option>
+                        <option value="0">Operator</option>
+                    </select>
+                </div>
+            
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Simpan</button>
+        </form>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock content %}

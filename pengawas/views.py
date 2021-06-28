@@ -55,14 +55,17 @@ def barang_admin(request):
 @login_required
 def d_barang(request, id):
     Barang = barang.objects.get(id=id)
-    Peminjaman = peminjaman_barang.objects.filter(
-        status_peminjaman='Dipinjam').get(id_barang=Barang.kode)
-    print(Peminjaman)
-    context = {
-        'Barang': Barang,
-        'Peminjaman': Peminjaman
-    }
-    return render(request, 'admin/barang/d_barang.html', context)
+    print(Barang.kode)
+    try:
+        Peminjaman = peminjaman_barang.objects.filter(
+            status_peminjaman='Dipinjam').get(id_barang=Barang.kode)
+        context = {
+            'Barang': Barang,
+            'Peminjaman': Peminjaman
+        }
+        return render(request, 'admin/barang/d_barang.html', context)
+    except peminjaman_barang.DoesNotExist:
+        return redirect('barang_admin')
 # ini adalah controler atau views untuk pegawai
 
 
@@ -332,8 +335,8 @@ def cetak_pegawai_ex(request):
     font_style = xlwt.XFStyle()
     font_style.font.bold = True
 
-    columns = ['No', 'Nama', 'Nip', 'Pangkat',
-               'Golongan', 'Jabatan', 'Tanggal_terdaftar']
+    columns = ['No', 'Nama', 'Nip', 'Pangkat/golongan',
+               'Jabatan']
 
     for col_num in range(len(columns)):
         ws.write(row_num, col_num, columns[col_num], font_style)
@@ -341,7 +344,7 @@ def cetak_pegawai_ex(request):
     font_style = xlwt.XFStyle()
 
     rows = pegawai.objects.values_list(
-        'id', 'nama', 'nip', 'pangkat', 'golongan', 'jabatan', 'tanggal_terdaftar')
+        'id', 'nama', 'nip', 'pangkat_atau_golongan', 'jabatan')
 
     for row in rows:
         row_num += 1

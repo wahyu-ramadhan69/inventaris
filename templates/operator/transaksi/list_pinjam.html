@@ -84,11 +84,11 @@
                             {% for pinjam in semua_pinjam %}
                             <tr>
                                 <td>{{forloop.counter}}</td>
-                                <td>{{pinjam.kode_pinjam}}</td>
-                                <td>{{ pinjam.nip_peminjam }}</td>
-                                <td>{{ pinjam.nama_peminjam }}</td>
-                                <td>{{pinjam.id_barang}}</td>
-                                <td>{{ pinjam.nama_barang }}</td>
+                                <td>{{ pinjam.kode_pinjam}}</td>
+                                <td>{{ pinjam.pegawai.nip }}</td>
+                                <td>{{ pinjam.pegawai.nama }}</td>
+                                <td>{{ pinjam.barang.kode }}</td>
+                                <td>{{pinjam.barang.nama}}</td>
                                 <td>
                                     {% if pinjam.status_peminjaman == "Dikembalikan" %}
                                     <span class="badge badge-complete">Di kembalikan</span>

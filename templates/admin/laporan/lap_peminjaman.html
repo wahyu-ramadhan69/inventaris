@@ -42,21 +42,15 @@
 
 {% block content %}
 
-<form action="{%url 'filterpinjam'%}" method="GET">
-    {% csrf_token %}
-    <div class="row form-group">
-        <a class="btn btn-primary ml-3 " href="{%url 'cetak_peminjaman'%}" role="button"><i class="fa fa-print"> Cetak</i></a>
-            <div class="page-title ml-3">
-                <h5>Dari</h5>
-            </div>
-            <input type="date" name="tanggal1" class="form-control col col-sm-2 ml-3 mr-3">
-            <div class="page-title">
-                <h5>Sampai</h5>
-            </div>
-            <input type="date" name="tanggal2" class="form-control col col-sm-2 ml-3 mr">
-            <button type="submit" class="btn btn-info ml-3"><i class="fa fa-filter"></i> filter data </button>
-    </div>
+<form action="{%url 'cetak_peminjaman'%}" method="GET" target='_blank' enctype="multipart/form-data">
+    <button type="submit" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm" style="color: aliceblue;"><i
+        class="fa fa-print fa-sm text-white-50"></i> Cetak semua</button>
+
+        <a data-toggle="modal" data-target="#myModalCetak"
+                        class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm" style="color: aliceblue;"><i
+                            class="fa fa-print fa-sm text-white-50"></i> Cetak Perbulan</a>
 </form>
+
 
 <div class="row mt-3">
     <div class="col-xl-12">
@@ -69,7 +63,8 @@
                     <table class="table " id="coba">
                         <thead>
                             <tr>
-                                <th class="serial">ID</th>
+                                <th class="serial">No</th>
+                                <th>Kode peminjaman</th>
                                 <th>Nip peminjam</th>
                                 <th>Nama peminjam</th>
                                 <th>Nama barang</th>
@@ -81,7 +76,8 @@
                         <tbody>
                             {% for pinjam in semua_pinjam %}
                             <tr>
-                                <td>{{pinjam.id}}</td>
+                                <td>{{forloop.counter}}</td>
+                                <td>{{pinjam.id_barang}}</td>
                                 <td>{{ pinjam.nip_peminjam }}</td>
                                 <td>{{ pinjam.nama_peminjam }}</td>
                                 <td>{{ pinjam.nama_barang }}</td>
@@ -108,5 +104,42 @@
     </div>  <!-- /.col-lg-8 -->
 
     
+</div>
+
+<div class="modal fade" id="myModalCetak" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">Cetak Bantuan Koperasi</h4>
+            </div>
+            <form class="form-horizontal" action="{% url 'cetak_filter_peminjaman' %}" target='_blank' method="GET"
+                enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body">
+
+                    <div class="form-group">
+                        <div class="d-flex justify-content-around">
+                            <div>
+                                <label for="inputEmail3" class=" control-label">Tanggal Awal</label>
+                                <input type="date" name="tanggal1" class="form-control" id="inputEmail3"
+                                    placeholder="Date" required>
+                            </div>
+
+                            <div>
+                                <label for="inputEmail3" class=" control-label">Tanggal Akhir</label>
+                                <input type="date" name="tanggal2" class="form-control" id="inputEmail3"
+                                    placeholder="Date" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class=" modal-footer">
+                    <button type="button" class="btn btn-default btn-flat" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary btn-flat" id="simpan">Cetak</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 {% endblock content %}

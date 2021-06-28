@@ -41,6 +41,7 @@
         <thead>
             <tr>
                 <th>No.</th>
+                <th>Kode Peminjaman</th>
                 <th>Nip peminjam</th>
                 <th>Nama peminjam</th>
                 <th>Nama barang</th>
@@ -53,6 +54,7 @@
                 {% for pinjam in semua %}
                     <tr>
                         <td>{{forloop.counter}}</td>
+                        <td>{{pinjam.kode_pinjam}}</td>
                                 <td>{{ pinjam.nip_peminjam }}</td>
                                 <td>{{ pinjam.nama_peminjam }}</td>
                                 <td>{{ pinjam.nama_barang }}</td>

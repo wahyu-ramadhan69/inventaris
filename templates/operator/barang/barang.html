@@ -44,8 +44,12 @@
 
 {% block content %}
 <div class="card-body">
-<a class="btn btn-info" href="{% url 'tambah_barang'%}" role="button">Tambah Data</a>
-<a class="btn btn-outline-secondary" href="{%url 'c_barang'%}" role="button"><i class="fa fa-print"> Cetak</i></a>
+<a href="{%url 'c_barang'%}" target='_blank'  class="btn btn-outline-secondary"><iclass="fa fa-print"></iclass=>Cetak</a>
+<a class="btn btn-info" data-toggle="modal" data-target="#tambah" role="button" style="color: aliceblue;">Tambah</a>
+
+<a data-toggle="modal" data-target="#Modalexport"
+                        class="d-none d-sm-inline-block btn btn-sm btn-success shadow-sm"><i
+                            class="fas fa-print fa-sm text-white-50"></i> Import Data</a>
 </div>
 
 <div class="row">
@@ -60,10 +64,11 @@
                         <thead>
                             <tr>
                                 <th class="serial">No</th>
-                                <th>Kode barang</th>
-                                <th>Foto</th>
-                                <th>Nama</th>
+                                <th>Nama barang</th>
                                 <th>Merk</th>
+                                <th>Kode barang</th>
+                                <th>Tahun Perolehan</th>
+                                <th>Peguasaan</th>
                                 <th>Status</th>
                                 <th>Keterangan</th>
                                 <th class="serial">#</th>
@@ -73,16 +78,17 @@
                             {% for barang in semua_barang %}
                             <tr>
                                 <td>{{forloop.counter}}</td>
-                                <td>{{barang.kode}}</td>
-                                <td><img src="{{ barang.Foto.url }}" width="60px" height="60px"></td>
                                 <td>{{ barang.nama }}</td>
                                 <td>
                                     {% if barang.merk == null %}
-                                    -
+                                    
                                     {% else %}
                                     {{barang.merk}}
                                     {% endif %}
                                 </td>
+                                <td>{{barang.kode}}</td>
+                                <td>{{barang.tahun_perolehan}}</td>
+                                <td>{{barang.penguasaan}}</td>
                                 <td>
                                     {% if barang.status == 'Dipinjam' %}
                                     <span class="badge badge-dark">Dipinjam</span>
@@ -191,30 +197,33 @@
                                                             <div class="card-body">
                                                                 <form action="{% url 'edit_barang' barang.id %}" method="post" enctype="multipart/form-data">
                                                                     {% csrf_token %}
-                                                                    <input type="text" class="form-control" name="kode" value="{{barang.kode}}" hidden>
                                                                     <div class="form-group">
-                                                                        <label for="nama" class="control-label mb-1">nama barang</label>
-                                                                        <input type="text" class="form-control" name="nama" id="nama" value="{{barang.nama}}" >
+                                                                        <label for="nama" class="control-label mb-1">nama barang *</label>
+                                                                        <input type="text" class="form-control" name="nama" id="nama" autocomplete="off" value="{{barang.nama}}" required>
                                                                     </div>
                                                                     <div class="form-group">
                                                                         <label for="nama" class="control-label mb-1">merk barang</label>
-                                                                        <input type="text" class="form-control" name="merk" id="merk" value="{{barang.merk}}" >
+                                                                        <input type="text" class="form-control" name="merk" id="merk" autocomplete="off" value="{{barang.merk}}" required>
                                                                     </div>
                                                                     <div class="form-group">
-                                                                        <label for="jumlah" class="control-label mb-1">Pilih Jenis Barang</label>
-                                                                        <input type="int" class="form-control" name="jenis" id="jenis" value="{{barang.jenis}}">
+                                                                        <label for="nama" class="control-label mb-1">kode barang</label>
+                                                                        <input type="text" class="form-control" name="kode" value="{{barang.kode}}">
                                                                     </div>
                                                                     <div class="form-group">
-                                                                        <label for="jumlah" class="control-label mb-1">Satuan barang</label>
-                                                                        <input type="int" class="form-control" name="satuan" id="satuan" value="{{barang.satuan}}">
+                                                                        <label for="nama" class="control-label mb-1">tahun perolehan</label>
+                                                                        <input type="text" class="form-control" name="tahun_perolehan" id="tahun_perolehan" autocomplete="off" value="{{barang.tahun_perolehan}}" required>
+                                                                    </div>
+                                                                    <div class="form-group">
+                                                                        <label for="nama" class="control-label mb-1">penguasaan</label>
+                                                                        <input type="text" class="form-control" name="penguasaan" id="penguasaan" autocomplete="off" value="{{barang.penguasaan}}" required>
                                                                     </div>
                                                                     <div class="form-group">
                                                                         <label for="keterangan" class="control-label mb-1">keterangan barang</label>
-                                                                        <textarea name="keterangan" id="keterangan" name="keterangan" rows="3" class="form-control">{{barang.keterangan}}</textarea>
+                                                                        <textarea name="keterangan" id="keterangan" rows="4" class="form-control" required>{{barang.keterangan}}</textarea>
                                                                     </div>
                                                                     <div class class="form-group">
                                                                         <label for="Foto" class="control-label mb-1">Upload Foto barang</label></div>
-                                                                        <input type="file" id="Foto" name="Foto" class="form-control-file" value="{{barang.Foto}}">
+                                                                        <input type="file" id="Foto" name="Foto" class="form-control-file">
                                                                     </div>
                                                                     <div>
                                                                         <button id="payment-button" type="submit" class="btn btn-lg btn-info btn-block">
@@ -237,7 +246,82 @@
             </div>
         </div> <!-- /.card -->
     </div>  <!-- /.col-lg-8 -->
-
-    
 </div>
+
+<div class="modal fade" id="Modalexport" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true"></button>
+                <h4 class="modal-title" id="myModalLabel">Import data</h4>
+            </div>
+            <form class="form-horizontal" action="{% url 'upload_barang' %}" method="post"
+                enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="inputEmail3" class="col-sm-4 control-label">Pilih file</label>
+                        <div class="col-sm-7">
+                            <input type="file" name="myfile" class="form-control" id="inputEmail3" required>
+                        </div>
+                    </div>
+                </div>
+                <div class=" modal-footer">
+                    <button type="button" class="btn btn-default btn-flat" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary btn-flat" id="simpan">Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="tambah" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Tambah Barang</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+            <form method="post" action="{% url 'tambah_barang'%}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="nama" class="control-label mb-1">nama barang *</label>
+                    <input type="text" class="form-control" name="nama" id="nama" autocomplete="off" required>
+                </div>
+                <div class="form-group">
+                    <label for="nama" class="control-label mb-1">merk barang</label>
+                    <input type="text" class="form-control" name="merk" id="merk" value="" autocomplete="off" required>
+                </div>
+                <div class="form-group">
+                    <label for="nama" class="control-label mb-1">kode barang</label>
+                    <input type="text" class="form-control" name="kode" >
+                </div>
+                <div class="form-group">
+                    <label for="nama" class="control-label mb-1">tahun perolehan</label>
+                    <input type="text" class="form-control" name="tahun_perolehan" id="tahun_perolehan" autocomplete="off" value="{% now "Y" %}" required>
+                </div>
+                <div class="form-group">
+                    <label for="nama" class="control-label mb-1">penguasaan</label>
+                    <input type="text" class="form-control" name="penguasaan" id="penguasaan" autocomplete="off" required>
+                </div>
+                <div class="form-group">
+                    <label for="keterangan" class="control-label mb-1">keterangan barang</label>
+                    <textarea name="keterangan" id="keterangan" rows="4" class="form-control" required>-</textarea>
+                </div>
+                <div class class="form-group">
+                    <label for="Foto" class="control-label mb-1">Upload Foto barang</label></div>
+                    <input type="file" id="Foto" name="Foto" class="form-control-file">
+                </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Simpan</button>
+        </form>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock content %}
